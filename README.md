@@ -9,3 +9,4 @@ course 1:
 
 - project 1 - complete
 - project 2 - complete
+- project 3 - complete
