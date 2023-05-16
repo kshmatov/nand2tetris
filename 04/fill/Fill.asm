@@ -12,3 +12,51 @@
 // the screen should remain fully clear as long as no key is pressed.
 
 // Put your code here.
+
+(LOOP)
+    @pos
+    M=0
+    @KBD
+    D=M
+    @filler
+    M=D
+
+(FILLSCREEN)
+    @8192 // Size of the screenmap 256*32
+    D=A
+    @pos
+    D=D-M
+    @END
+    D;JLE
+
+    @filler
+    D=M
+    @WHITE
+    D;JEQ
+
+// BLACK
+    @SCREEN
+    D=A
+    @pos
+    A=D+M
+    M=-1
+    @DONE
+    0;JMP
+
+(WHITE)
+    @SCREEN
+    D=A
+    @pos
+    A=D+M
+    M=0
+
+(DONE)
+
+    @pos
+    M=M+1
+    @FILLSCREEN
+    0;JMP
+
+(END)
+    @LOOP
+    0;JMP
