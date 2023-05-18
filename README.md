@@ -7,8 +7,8 @@ My workspace for courses **Build a Modern Computer from First Principles: From N
 
 course 1:
 
-- project 1 - complete
-- project 2 - complete
-- project 3 - complete
-- project 4 - complete
-- project 5 - complete
+- project 1 - base logical elements (AND, OR, etc), complete
+- project 2 - ALU and its elements, complete
+- project 3 - memory chips, complete
+- project 4 - study Hack assembler, complete
+- project 5 - Hack CPU, memory and computer, complete
