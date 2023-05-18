@@ -3,7 +3,7 @@
 My workspace for courses **Build a Modern Computer from First Principles: From Nand to Tetris**:
 
 - https://www.coursera.org/learn/build-a-computer
--  https://www.coursera.org/learn/nand2tetris2
+- https://www.coursera.org/learn/nand2tetris2
 
 course 1:
 
@@ -11,3 +11,4 @@ course 1:
 - project 2 - complete
 - project 3 - complete
 - project 4 - complete
+- project 5 - complete
