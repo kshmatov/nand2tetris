@@ -12,3 +12,4 @@ course 1:
 - project 3 - memory chips, complete
 - project 4 - study Hack assembler, complete
 - project 5 - Hack CPU, memory and computer, complete
+- project 6 - assembler for hack computer, complete. Sources in repository https://github.com/kshmatov/nandAsm
