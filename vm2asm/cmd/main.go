@@ -8,13 +8,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kshmatov/nand2tetris/07/vm/internal/parser"
+	"github.com/kshmatov/nand2tetris/vm2asm/internal/parser"
 )
 
 func main() {
 	out := flag.String("o", "", "output file, defualt stdout")
 	in := flag.String("i", "", "source file")
-	bin := flag.Bool("b", false, "store in binary format, in in binary string")
 	flag.Parse()
 	if *in == "" {
 		fmt.Printf("no source file is given\n")
@@ -27,7 +26,7 @@ func main() {
 		log.Fatal(err)
 	}
 	src := strings.Split(string(cnt), "\n")
-	res, err := parser.Parse(src)
+	res := parser.Parse(src)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -44,17 +43,14 @@ func main() {
 		defer f.Close()
 		df = f
 	}
-	if *bin {
-		_, err := df.Write(res.Binary())
+
+	for _, command := range res {
+		asm, err := command.Out()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return
 		}
-		if *out == "" {
-			fmt.Println()
-		}
-	} else {
-		for _, s := range res.String() {
+		for _, s := range asm {
 			_, err := df.Write([]byte(s + "\n"))
 			if err != nil {
 				fmt.Println(err)

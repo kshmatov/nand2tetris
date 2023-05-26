@@ -1,77 +1,109 @@
 package data
 
 import (
-	"errors"
-)
+	"fmt"
 
-type cType int
-type sType int 
-type addr uint16
-
-
-const (
-	cPush = CType(0) iota
-	cPop
-	cArithmetic
-	cLabel
-	cGoto
-	cIf
-	cFunction
-	cReturn
-	cCall
-
-	sStack  = sType(0) iota
-	sLocal
-	sArgs
-	sThis
-	sThat
-	sConst
-	sStatic
-	sTemp
-	sPointer
-
-	sp = addr(0) iota
-	lcl 
-	arg
-	this
-	that
-)
-
-var (
-	ErrMemSegmentUndefined = errors
-
-	memSegments = map[sType]addr {
-		sStack: 256,
-		sStatic: 16,
-		sTemp: 5,
-	}
+	"github.com/pkg/errors"
 )
 
 type Command interface {
 	Out() ([]string, error)
 }
 
-type push struct {
-	comment string
-	segment sStack
-	addr uint16
-}
+const (
+	cPush     = "push"
+	cPop      = "pop"
+	cAdd      = "add"
+	cSub      = "sub"
+	cNeg      = "neg"
+	cEq       = "eq"
+	cGt       = "gt"
+	cLt       = "lt"
+	cAnd      = "and"
+	cOr       = "or"
+	cNot      = "not"
+	cLabel    = "label"
+	cGoto     = "goto"
+	cIf       = "if"
+	cFunction = "?"
+	cReturn   = "return"
+	cCall     = "?"
 
-func (p *push) Out()([]string, error) {
-	segAddr, ok := memSegments[p.segment]
-	if ! ok {
-		return nil, ErrMemSegmentUndefined
+	sStack   = "stack"
+	sLocal   = "local"
+	sArgs    = "argument"
+	sThis    = "this"
+	sThat    = "that"
+	sConst   = "constant"
+	sStatic  = "static"
+	sTemp    = "temp"
+	sPointer = "pointer"
+
+	sp   = uint16(0)
+	lcl  = uint16(1)
+	arg  = uint16(2)
+	this = uint16(3)
+	that = uint16(4)
+)
+
+var (
+	ErrMemSegmentUndefined = errors.New("segment undefined")
+
+	memSegments = map[string]uint16{
+		sStack:  256,
+		sStatic: 16,
+		sTemp:   5,
 	}
-	return []string {
-		"// " +comment,
-		""
+
+	pToSegments = map[string]string{
+		sLocal: "LCL",
+		sArgs:  "ARG",
+		sThis:  "THIS",
+		sThat:  "THAT",
 	}
+
+	// set M to top value on stack
+	popAsm = []string{
+		"@SP",
+		"M=M-1",
+		"A=M",
+	}
+
+	// push value from D to stack
+	pushAsm = []string{
+		// get pointer to stack head and add value from D to the top
+		"@SP",
+		"A=M",
+		"M=D",
+		// inc stack pointer
+		"@SP",
+		"M=M+1",
+	}
+)
+
+func New(op string, data ...string) Command {
+	fmt.Println(op, data)
+	switch op {
+	case cPop:
+		return &pop{
+			comment: op + " " + data[0] + " " + data[1],
+			segment: data[0],
+			addr:    data[1],
+		}
+	case cPush:
+		return &push{
+			comment: op + " " + data[0] + " " + data[1],
+			segment: data[0],
+			addr:    data[1],
+		}
+	case cAdd, cSub, cEq, cGt, cLt, cAnd, cOr:
+		return &twoOperands{
+			op: op,
+		}
+	case cNeg, cNot:
+		return &oneOperand{
+			op: op,
+		}
+	}
+	return nil
 }
-
-type pop struct {
-	segment sStack
-	addr uint16
-}
-
-
-
