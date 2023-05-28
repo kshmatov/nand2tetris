@@ -1,2 +1,3 @@
 *.out
 *.zip
+vm2asm/samples/*.asm
