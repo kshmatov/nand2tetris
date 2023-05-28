@@ -2,7 +2,6 @@ package data
 
 import (
 	"strconv"
-	"time"
 )
 
 var (
@@ -10,9 +9,6 @@ var (
 		cAdd: {"M=M+D"},
 		cSub: {"M=M-D"},
 		cNeg: {"M=-M"},
-		cEq:  {"0;JEQ"},
-		cGt:  {"0;JGT"},
-		cLt:  {"0;JLT"},
 		cAnd: {"M=M&D"},
 		cOr:  {"M=M|D"},
 		cNot: {"M=!M"},
@@ -20,7 +16,7 @@ var (
 )
 
 func getOps(op string) []string {
-	t := strconv.Itoa(time.Now().Nanosecond())
+
 	switch op {
 	case cAdd, cSub, cNeg, cAnd, cOr, cNot:
 		return opsAsm[op]
@@ -32,15 +28,22 @@ func getOps(op string) []string {
 		case cGt:
 			jmp = "JGT"
 		}
+		t := strconv.Itoa(labelCnt)
+		labelCnt++
 		return []string{
+			"D=M-D",
 			"@TRUE" + t,
-			"M-D;JLT",
+			"D;JLT",
+			"@SP",
+			"A=M",
 			"M=0",
 			"@END" + t,
 			"0;" + jmp,
 			"(TRUE" + t + ")",
+			"@SP",
+			"A=M",
 			"M=-1",
-			"@END" + t,
+			"(END" + t + ")",
 		}
 	}
 	return nil

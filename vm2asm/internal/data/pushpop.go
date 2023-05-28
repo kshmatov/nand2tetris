@@ -40,10 +40,11 @@ func (p *push) Out() ([]string, error) {
 	res := []string{
 		"// " + p.comment,
 	}
-	res = append(res, pushAsm...)
 	// get value from memory segment
 	res = append(res,
 		addrStr...)
+
+	res = append(res, pushAsm...)
 
 	return res, nil
 }
@@ -55,20 +56,29 @@ type pop struct {
 }
 
 func (p *pop) Out() ([]string, error) {
-	segAddr, ok := memSegments[p.segment]
-	if !ok {
-		return nil, errors.Wrap(ErrMemSegmentUndefined, p.comment)
+	if p.segment == sConst {
+		return nil, errors.Wrap(ErrPopToConst, p.comment)
 	}
-	resAddr := segAddr + addr(p.addr)
+	selector := p.segment
+	if p.segment == sPointer {
+		if p.addr == "0" {
+			selector = sThis
+		} else {
+			selector = sThat
+		}
+	}
+
+	addrStr := baseAddr(selector, p.addr)
+
 	res := []string{
 		"// " + p.comment,
 	}
+
+	res = append(res, addrStr...)
+	res = append(res, "D=A", "@5", "M=D")
 	res = append(res, popAsm...)
 	res = append(res,
-		"D=M",
-		// set memory to value
-		"@"+strconv.Itoa(int(resAddr)),
-		"M=D",
+		"D=M", "@5", "A=M", "M=D",
 	)
 	return res, nil
 }

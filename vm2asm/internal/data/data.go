@@ -2,6 +2,8 @@ package data
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -48,6 +50,9 @@ const (
 
 var (
 	ErrMemSegmentUndefined = errors.New("segment undefined")
+	ErrPopToConst          = errors.New("can't update constant")
+
+	labelCnt = 0
 
 	memSegments = map[string]uint16{
 		sStack:  256,
@@ -106,4 +111,17 @@ func New(op string, data ...string) Command {
 		}
 	}
 	return nil
+}
+
+type End struct {
+}
+
+func (e *End) Out() ([]string, error) {
+	m := "END" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	return []string{
+		"// this is the end...",
+		"(" + m + ")",
+		"@" + m,
+		"0;JMP",
+	}, nil
 }

@@ -33,16 +33,17 @@ func main() {
 	}
 	var df io.Writer
 	if *out == "" {
-		df = os.Stdout
-	} else {
-		f, err := os.OpenFile(*out, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer f.Close()
-		df = f
+		parts := strings.Split(*in, ".")
+		parts[len(parts)-1] = "asm"
+		*out = strings.Join(parts, ".")
 	}
+	f, err := os.OpenFile(*out, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	df = f
 
 	for _, command := range res {
 		asm, err := command.Out()
