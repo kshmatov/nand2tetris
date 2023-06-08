@@ -21,21 +21,36 @@ func main() {
 		return
 	}
 
-	cnt, err := os.ReadFile(*in)
+	fs, err := os.Stat(*in)
 	if err != nil {
-		log.Fatal(err)
-	}
-	src := strings.Split(string(cnt), "\n")
-	res := parser.Parse(src)
-	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return
 	}
-	var df io.Writer
-	if *out == "" {
+
+	tempFs := *out
+
+	fns := []string{}
+
+	if fs.IsDir() {
+		tempFs = fs.Name() + ".asm"
+		dirData, err := os.ReadDir(*in)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		for _, f := range dirData {
+			if f.Type().IsRegular() && strings.HasSuffix(f.Name(), ".vm") {
+				fns = append(fns, *in+string(os.PathSeparator)+f.Name())
+			}
+		}
+	} else {
 		parts := strings.Split(*in, ".")
 		parts[len(parts)-1] = "asm"
-		*out = strings.Join(parts, ".")
+		tempFs = strings.Join(parts, ".")
+	}
+
+	if *out == "" {
+		*out = tempFs
 	}
 	f, err := os.OpenFile(*out, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
@@ -43,21 +58,38 @@ func main() {
 		return
 	}
 	defer f.Close()
-	df = f
 
+	f.Write([]byte(parser.Head()))
+	for _, fn := range fns {
+		parts := strings.Split(fn, string(os.PathSeparator))
+		name := strings.Split(parts[len(parts)-1], ".")[0]
+
+		cnt, err := os.ReadFile(fn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		src := strings.Split(string(cnt), "\n")
+
+		build(src, f, name)
+	}
+	f.Write([]byte(parser.End()))
+
+	fmt.Println("Done")
+}
+
+func build(src []string, out io.Writer, name string) error {
+	res := parser.Parse(src, name)
 	for _, command := range res {
 		asm, err := command.Out()
 		if err != nil {
-			fmt.Println(err.Error())
-			return
+			return err
 		}
 		for _, s := range asm {
-			_, err := df.Write([]byte(s + "\n"))
+			_, err := out.Write([]byte(s + "\n"))
 			if err != nil {
-				fmt.Println(err)
-				return
+				return err
 			}
 		}
 	}
-	fmt.Println("Done")
+	return nil
 }

@@ -3,14 +3,11 @@ package data
 import (
 	"fmt"
 	"strconv"
-	"time"
 
+	"github.com/kshmatov/nand2tetris/vm2asm/internal/command"
+	"github.com/kshmatov/nand2tetris/vm2asm/internal/parser/data/counter"
 	"github.com/pkg/errors"
 )
-
-type Command interface {
-	Out() ([]string, error)
-}
 
 const (
 	cPush     = "push"
@@ -27,9 +24,9 @@ const (
 	cLabel    = "label"
 	cGoto     = "goto"
 	cIf       = "if"
-	cFunction = "?"
+	cFunction = "function"
 	cReturn   = "return"
-	cCall     = "?"
+	cCall     = "call"
 
 	sStack   = "stack"
 	sLocal   = "local"
@@ -52,7 +49,7 @@ var (
 	ErrMemSegmentUndefined = errors.New("segment undefined")
 	ErrPopToConst          = errors.New("can't update constant")
 
-	labelCnt = 0
+	fileName = ""
 
 	memSegments = map[string]uint16{
 		sStack:  256,
@@ -86,7 +83,11 @@ var (
 	}
 )
 
-func New(op string, data ...string) Command {
+func SetFileName(s string) {
+	fileName = s
+}
+
+func New(op string, data ...string) command.Command {
 	fmt.Println(op, data)
 	switch op {
 	case cPop:
@@ -109,6 +110,38 @@ func New(op string, data ...string) Command {
 		return &oneOperand{
 			op: op,
 		}
+	case cLabel:
+		return &label{
+			name: data[0],
+		}
+	case cGoto:
+		return &gotoCmd{
+			label: data[0],
+		}
+	case cIf:
+		return &ifGoto{
+			label: data[0],
+		}
+	case cFunction:
+		i, err := strconv.Atoi(data[1])
+		if err != nil {
+			panic(err)
+		}
+		return &function{
+			name: data[0],
+			args: i,
+		}
+	case cCall:
+		i, err := strconv.Atoi(data[1])
+		if err != nil {
+			panic(err)
+		}
+		return &call{
+			name: data[0],
+			args: i,
+		}
+	case cReturn:
+		return &ret{}
 	}
 	return nil
 }
@@ -117,11 +150,30 @@ type End struct {
 }
 
 func (e *End) Out() ([]string, error) {
-	m := "END" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	m := fileName + "$END" + counter.Get()
 	return []string{
 		"// this is the end...",
 		"(" + m + ")",
 		"@" + m,
 		"0;JMP",
 	}, nil
+}
+
+type Head struct {
+}
+
+func (h *Head) Out() ([]string, error) {
+	res := []string{
+		"@256",
+		"D=A",
+		"@SP",
+		"M=D",
+	}
+	c := call{
+		name: "Sys.init",
+		args: 0,
+	}
+	cout, _ := c.Out()
+	res = append(res, cout...)
+	return res, nil
 }

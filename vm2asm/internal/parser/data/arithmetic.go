@@ -1,7 +1,7 @@
 package data
 
 import (
-	"strconv"
+	"github.com/kshmatov/nand2tetris/vm2asm/internal/parser/data/counter"
 )
 
 var (
@@ -28,22 +28,21 @@ func getOps(op string) []string {
 		case cGt:
 			jmp = "JGT"
 		}
-		t := strconv.Itoa(labelCnt)
-		labelCnt++
+		t := counter.Get()
 		return []string{
 			"D=M-D",
-			"@TRUE" + t,
+			"@" + fileName + "$TRUE" + t,
 			"D;JLT",
 			"@SP",
 			"A=M",
 			"M=0",
-			"@END" + t,
+			"@" + fileName + "$END" + t,
 			"0;" + jmp,
-			"(TRUE" + t + ")",
+			"(" + fileName + "$TRUE" + t + ")",
 			"@SP",
 			"A=M",
 			"M=-1",
-			"(END" + t + ")",
+			"(" + fileName + "$END" + t + ")",
 		}
 	}
 	return nil
