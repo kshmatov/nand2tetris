@@ -97,10 +97,14 @@ func baseAddr(selector, shift string) []string {
 		return []string{
 			"@" + shift,
 		}
-	case sTemp, sStatic:
+	case sTemp:
 		base := memSegments[selector] + addr(shift)
 		return []string{
 			"@" + strconv.Itoa(int(base)),
+		}
+	case sStack:
+		return []string{
+			"@" + fileName + "." + shift,
 		}
 	}
 	return nil
