@@ -14,3 +14,4 @@ course 1:
 - project 5 - Hack CPU, memory and computer, complete
 - project 6 - assembler for hack computer, complete. Sources in repository https://github.com/kshmatov/nandAsm
 - project 7 - vm2asm, branch project 7
+- project 8 - vm2asm, branch project 8
